@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+
+# Rust
+backend/target/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
