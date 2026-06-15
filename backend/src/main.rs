@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema};
+use async_graphql::{EmptySubscription, Schema};
 use async_graphql_axum::GraphQL;
 use axum::{routing::get, Router};
 use sqlx::postgres::PgPoolOptions;
@@ -8,17 +8,9 @@ use tower_http::cors::CorsLayer;
 use tracing_subscriber::EnvFilter;
 
 mod db;
+mod graphql;
 
-struct QueryRoot;
-
-#[Object]
-impl QueryRoot {
-    async fn health(&self) -> &str {
-        "ok"
-    }
-}
-
-type AppSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
+use graphql::schema::{MutationRoot, QueryRoot};
 
 #[tokio::main]
 async fn main() {
@@ -42,13 +34,13 @@ async fn main() {
         .await
         .expect("Failed to run migrations");
 
-    let schema = Schema::build(QueryRoot, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(QueryRoot::default(), MutationRoot::default(), EmptySubscription)
         .data(pool.clone())
         .finish();
 
     let app = Router::new()
         .route("/graphql", axum::routing::any_service(GraphQL::new(schema)))
-        .route("/health", get(health))
+        .route("/health", get(|| async { "ok" }))
         .layer(CorsLayer::permissive());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 4000));
@@ -56,8 +48,4 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
-}
-
-async fn health() -> &'static str {
-    "ok"
 }
