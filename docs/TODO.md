@@ -9,65 +9,51 @@
 
 ---
 
-## Phase 1: Project Scaffolding & Database {P0}
+## Phase 1: Project Scaffolding & Database {P0} ✓
 
-- [ ] Initialize Rust workspace (`backend/`) with Cargo
-  - Dependencies: `axum`, `async-graphql`, `sqlx` (postgres), `tokio`, `serde`,
-    `chrono`, `tower-http`
-- [ ] Initialize Vite + React + TypeScript project (`frontend/`)
-  - Dependencies: `react`, `urql`, `graphql`, `date-fns`, `tailwindcss`
-- [ ] Create `docker-compose.yml` with PostgreSQL
-- [ ] Write SQLx migrations for the five tables:
-  - `accounts`
-  - `bank_entries`
-  - `account_entries`
-  - `projected_entries`
-  - `bank_imports`
-- [ ] Write performance indexes migration
-- [ ] Set up Axum server skeleton with health check endpoint
-- [ ] Set up SQLx connection pool
-- [ ] Set up async-graphql with a placeholder `{ ok }` schema
-- [ ] Configure CORS for frontend dev server
+- [x] Initialize Rust workspace with Cargo (axum, async-graphql, sqlx, tokio, etc.)
+- [x] Initialize Vite + React + TypeScript project
+- [x] Create `docker-compose.yml` with PostgreSQL + backend + frontend
+- [x] Write SQLx migrations (5 tables + indexes + projected_entry date column)
+- [x] Set up Axum server + SQLx pool + async-graphql + CORS
+- [x] Derive in `docker-compose.yml`: backend/frontend Dockerfiles, cargo-watch, hot-reload
 
 ---
 
-## Phase 2: Core GraphQL CRUD {P0}
+## Phase 2: Core GraphQL CRUD {P0} ✓
 
 ### Accounts
-- [ ] Implement `Query::accounts(active: Boolean)`
-- [ ] Implement `Query::account(id: ID!)`
-- [ ] **No `createAccount` mutation** — accounts are created implicitly during
-      bank entry creation (see Bank Entries below)
-- [ ] Implement `Mutation::updateAccount`
-- [ ] Implement `Mutation::deleteAccount` (soft delete)
-- [ ] Implement computed fields: `balanceCents`, `active`
+- [x] `Query::accounts(active: Boolean)` — with balance + active computed fields
+- [x] `Query::account(id: ID!)`
+- [x] No `createAccount` mutation — accounts created implicitly during entry
+- [x] `Mutation::updateAccount` (name, asset, category, position)
+- [x] `Mutation::deleteAccount` (soft delete via `deleted_at`)
 
 ### Bank Entries
-- [ ] Implement `Query::bankEntries` (with date range, account filter)
-- [ ] Implement `Query::bankEntry(id: ID!)`
-- [ ] Implement `Mutation::createBankEntry` (with nested account entries)
-- [ ] Implement account-on-the-fly creation in bank entry mutation — if an
-      account name doesn't exist, create it with defaults (`asset = true`,
-      `category = null`) and use it
-- [ ] Implement `Mutation::updateBankEntry`
-- [ ] Implement `Mutation::deleteBankEntry`
+- [x] `Query::bankEntries` (with date range + account filter via dynamic SQL)
+- [x] `Query::bankEntry(id: ID!)` — includes nested account entries with account detail
+- [x] `Mutation::createBankEntry` — inline account creation via `account_name`
+- [x] `Mutation::updateBankEntry` — with account entry add/remove/modify
+- [x] `Mutation::deleteBankEntry` (hard delete, returns deleted entry + its children)
 
 ### Account Entries
-- [ ] Handled as nested mutations within BankEntry (no standalone CRUD)
-- [ ] Implement running balance window function query
+- [x] Nested within BankEntry mutations (no standalone CRUD)
+- [x] Running balance via `COALESCE(SUM(amount_cents), 0)` per account
 
 ---
 
-## Phase 3: Projected Entries & Forecast {P0}
+## Phase 3: Projected Entries & Forecast {P0} ✓
 
-- [ ] Implement `Query::projectedEntries` (with accountId, active filters)
-- [ ] Implement `Query::projectedEntry(id: ID!)`
-- [ ] Implement `Mutation::createProjectedEntry`
-- [ ] Implement `Mutation::updateProjectedEntry`
-- [ ] Implement `Mutation::deleteProjectedEntry`
-- [ ] Integrate `rrule` crate for RRULE expansion
-- [ ] Implement `Query::forecast(from: Date!, to: Date!)` — merges real bank
-      entries with projected entries expanded into date range
+- [x] `Query::projectedEntries` (with accountId + active filters)
+- [x] `Query::projectedEntry(id: ID!)`
+- [x] `Mutation::createProjectedEntry` — with date, optional rrule
+- [x] `Mutation::updateProjectedEntry`
+- [x] `Mutation::deleteProjectedEntry`
+- [x] `rrule` crate integrated — `expand_rrule()` parses RRULE, filters by date range
+- [x] `Query::forecast(from: Date!, to: Date!)` — merges real bank entries with
+      expanded projected entries, sorted by date
+- [x] `date` column added to `projected_entries` (migration 003) — required for both
+      one-time entries (no rrule) and DTSTART for recurring entries
 - [ ] Write tests for RRULE expansion edge cases
 
 ---

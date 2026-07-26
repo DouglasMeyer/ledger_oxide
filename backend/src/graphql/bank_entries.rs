@@ -211,6 +211,8 @@ impl BankEntryQuery {
             param_idx += 1;
         }
 
+        let _ = param_idx;
+
         if !conditions.is_empty() {
             sql.push_str(" WHERE ");
             sql.push_str(&conditions.join(" AND "));
