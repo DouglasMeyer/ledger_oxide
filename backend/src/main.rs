@@ -9,6 +9,7 @@ use tracing_subscriber::EnvFilter;
 
 mod db;
 mod graphql;
+mod services;
 
 use graphql::schema::{MutationRoot, QueryRoot};
 

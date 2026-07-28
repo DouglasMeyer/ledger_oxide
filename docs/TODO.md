@@ -58,16 +58,18 @@
 
 ---
 
-## Phase 4: OFX/QFX Import {P1}
+## Phase 4: OFX/QFX Import {P1} ✓
 
-- [ ] Build OFX file parser (custom or wrap existing OFX parser)
-- [ ] Handle QFX format (same structure, different wrapper)
-- [ ] Implement `Mutation::importBankStatement(file: Upload!)`
-- [ ] External ID dedup: skip bank entries with matching `external_id`
-- [ ] Auto-create BankEntries with zero account entries allocated
-- [ ] Implement `Query::bankImports` (import history)
-- [ ] Implement "needs distribution" query (bank entries where
+- [x] Build OFX file parser (custom regex-based, same approach as original Rails app)
+- [x] Handle QFX format (same structure, different wrapper)
+- [x] Implement `Mutation::importBankStatement(fileContent: String!)` — client reads
+      file and sends content as string (avoids multipart upload complexity)
+- [x] External ID dedup: skip bank entries with matching `external_id`
+- [x] Auto-create BankEntries with zero account entries allocated
+- [x] Implement `Query::bankImports` (import history)
+- [x] Implement `Query::bankEntriesNeedingDistribution` (bank entries where
       `amountCents != SUM(accountEntries.amountCents)`)
+- [x] Bank imports table (migration 004)
 
 ---
 

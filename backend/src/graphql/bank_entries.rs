@@ -5,7 +5,7 @@ use sqlx::PgPool;
 use crate::graphql::accounts::{AccountRow, Account};
 
 #[derive(Debug, sqlx::FromRow)]
-pub struct BankEntryRow {
+pub(crate) struct BankEntryRow {
     pub id: i32,
     pub date: NaiveDate,
     pub amount_cents: i32,
@@ -30,7 +30,7 @@ pub struct BankEntry {
 }
 
 impl BankEntry {
-    fn from_row(row: BankEntryRow, account_entries: Vec<AccountEntry>) -> Self {
+    pub(crate) fn from_row(row: BankEntryRow, account_entries: Vec<AccountEntry>) -> Self {
         Self {
             id: row.id,
             date: row.date,
@@ -140,7 +140,7 @@ async fn ensure_account(pool: &PgPool, name: &str) -> Result<(AccountRow, bool)>
     }
 }
 
-async fn fetch_account_entries_for_bank_entry(
+pub(crate) async fn fetch_account_entries_for_bank_entry(
     pool: &PgPool,
     bank_entry_id: i32,
 ) -> Result<Vec<AccountEntry>> {

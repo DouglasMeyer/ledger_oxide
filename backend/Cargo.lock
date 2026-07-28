@@ -1165,6 +1165,7 @@ dependencies = [
  "axum",
  "chrono",
  "dotenvy",
+ "regex",
  "rrule",
  "serde",
  "serde_json",
