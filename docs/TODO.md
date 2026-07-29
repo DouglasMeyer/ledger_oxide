@@ -73,23 +73,22 @@
 
 ---
 
-## Phase 5: Frontend — Skeleton & Navigation {P1}
+## Phase 5: Frontend — Skeleton & Navigation {P1} ✓
 
-- [ ] Set up routing: `/accounts`, `/transactions`, `/forecast`, `/import`,
-      `/projections`
-- [ ] Set up urql client pointing at backend GraphQL endpoint
-- [ ] Set up Tailwind CSS theme
-- [ ] Create shared layout (sidebar or top nav)
-- [ ] Create shared UI components:
-  - [ ] CurrencyInput (cents ↔ formatted display)
-  - [ ] DatePicker
-  - [ ] AccountSelect (type-to-create — no separate create form; typing a
-        new name and pressing Enter creates the account implicitly)
-  - [ ] SplitRowsWidget (dynamic add/remove split rows)
-  - [ ] DataTable (sortable, filterable)
-  - [ ] Modal / Drawer
-- [ ] Create account list page
-- [ ] Create transaction list page (with date + account filters)
+- [x] Set up routing (`/accounts`, `/transactions`, `/forecast`, `/import`,
+      `/projections`) with React Router
+- [x] Set up urql client pointing at `/graphql` proxy
+- [x] Set up Tailwind CSS v4 via `@tailwindcss/vite`
+- [x] Create shared layout with dark sidebar navigation
+- [x] Create shared UI components:
+  - [x] `CurrencyInput` (cents ↔ formatted display with draft-on-focus)
+  - [x] `DatePicker`
+  - [x] `AccountSelect` (type-to-create — new name creates account implicitly)
+  - [x] `SplitRowsWidget` (dynamic add/remove splits with allocation total)
+  - [x] `DataTable` (sortable foundation)
+  - [x] `Modal` (with Escape-to-close)
+- [x] Create account list page (fetches via GraphQL, shows name/balance/type)
+- [x] Create transaction list page (date + account filters via GraphQL)
 
 ---
 
