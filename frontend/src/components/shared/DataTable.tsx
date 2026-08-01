@@ -11,9 +11,10 @@ interface DataTableProps<T> {
   columns: Column<T>[];
   rows: T[];
   keyExtractor: (row: T) => string | number;
+  onRowClick?: (row: T) => void;
 }
 
-export default function DataTable<T>({ columns, rows, keyExtractor }: DataTableProps<T>) {
+export default function DataTable<T>({ columns, rows, keyExtractor, onRowClick }: DataTableProps<T>) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
@@ -28,7 +29,11 @@ export default function DataTable<T>({ columns, rows, keyExtractor }: DataTableP
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={keyExtractor(row)} className="border-b hover:bg-gray-50">
+            <tr
+              key={keyExtractor(row)}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              className={`border-b ${onRowClick ? "cursor-pointer hover:bg-gray-50" : "hover:bg-gray-50"}`}
+            >
               {columns.map((col) => (
                 <td key={col.key} className={`px-3 py-2 text-sm ${col.className || ""}`}>
                   {col.render(row)}

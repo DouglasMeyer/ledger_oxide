@@ -2,8 +2,9 @@ import { useCallback } from "react";
 import CurrencyInput from "./CurrencyInput";
 import AccountSelect from "./AccountSelect";
 
-interface SplitRow {
+export interface SplitRow {
   key: string;
+  id?: number;
   accountName: string;
   amountCents: number;
 }

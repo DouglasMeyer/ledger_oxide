@@ -19,8 +19,22 @@ export const ACCOUNTS_QUERY = gql`
   }
 `;
 
+export const ACCOUNT_QUERY = gql`
+  query Account($id: ID!) {
+    account(id: $id) {
+      id
+      name
+      balanceCents
+      active
+      asset
+      category
+      position
+    }
+  }
+`;
+
 export const BANK_ENTRIES_QUERY = gql`
-  query BankEntries($dateFrom: Date, $dateTo: Date, $accountId: Int) {
+  query BankEntries($dateFrom: NaiveDate, $dateTo: NaiveDate, $accountId: Int) {
     bankEntries(dateFrom: $dateFrom, dateTo: $dateTo, accountId: $accountId) {
       id
       date
@@ -29,6 +43,66 @@ export const BANK_ENTRIES_QUERY = gql`
       notes
       externalId
       createdAt
+      updatedAt
+      accountEntries {
+        id
+        accountId
+        bankEntryId
+        amountCents
+        notes
+        account {
+          id
+          name
+          balanceCents
+          active
+          asset
+          category
+          position
+        }
+      }
+    }
+  }
+`;
+
+export const BANK_ENTRY_QUERY = gql`
+  query BankEntry($id: ID!) {
+    bankEntry(id: $id) {
+      id
+      date
+      amountCents
+      description
+      notes
+      externalId
+      createdAt
+      updatedAt
+      accountEntries {
+        id
+        accountId
+        bankEntryId
+        amountCents
+        notes
+        account {
+          id
+          name
+          balanceCents
+          active
+          asset
+          category
+          position
+        }
+      }
+    }
+  }
+`;
+
+export const CREATE_BANK_ENTRY = gql`
+  mutation CreateBankEntry($input: CreateBankEntryInput!) {
+    createBankEntry(input: $input) {
+      id
+      date
+      amountCents
+      description
+      notes
       accountEntries {
         id
         amountCents
@@ -41,16 +115,30 @@ export const BANK_ENTRIES_QUERY = gql`
   }
 `;
 
-export const ACCOUNT_QUERY = gql`
-  query Account($id: ID!) {
-    account(id: $id) {
+export const UPDATE_BANK_ENTRY = gql`
+  mutation UpdateBankEntry($id: ID!, $input: UpdateBankEntryInput!) {
+    updateBankEntry(id: $id, input: $input) {
       id
-      name
-      balanceCents
-      active
-      asset
-      category
-      position
+      date
+      amountCents
+      description
+      notes
+      accountEntries {
+        id
+        amountCents
+        account {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const DELETE_BANK_ENTRY = gql`
+  mutation DeleteBankEntry($id: ID!) {
+    deleteBankEntry(id: $id) {
+      id
     }
   }
 `;

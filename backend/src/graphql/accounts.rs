@@ -55,7 +55,7 @@ pub struct UpdateAccountInput {
 
 async fn fetch_account_balance(pool: &PgPool, account_id: i32) -> Result<i32> {
     let balance: Option<(i32,)> = sqlx::query_as(
-        "SELECT COALESCE(SUM(amount_cents), 0) FROM account_entries WHERE account_id = $1",
+        "SELECT COALESCE(SUM(amount_cents), 0)::INTEGER FROM account_entries WHERE account_id = $1",
     )
     .bind(account_id)
     .fetch_optional(pool)

@@ -92,15 +92,20 @@
 
 ---
 
-## Phase 6: Frontend — Transaction Entry {P1}
+## Phase 6: Frontend — Transaction Entry {P1} ✓
 
-- [ ] Build new transaction form:
-  - [ ] Date, amount, description fields
-  - [ ] Split rows with inline account creation
-  - [ ] Running allocation total vs. transaction total indicator
-- [ ] Build edit transaction form (reuse create form)
-- [ ] Build transaction detail view
-- [ ] Handle account-on-the-fly creation in the dropdown component
+- [x] Build new transaction form (`BankEntryForm`, create + edit reuse):
+  - [x] Date, amount, description, notes fields
+  - [x] Split rows with inline account creation
+  - [x] Running allocation total vs. transaction total indicator
+- [x] Build edit transaction form (reuses `BankEntryForm`; removed splits sent
+      with `destroy: true`)
+- [x] Build transaction detail view (row click → modal with splits + edit/delete)
+- [x] Handle account-on-the-fly creation in the dropdown component
+- [x] Fixed backend bugs found during integration:
+  - [x] `deleteBankEntry` FK violation (now deletes account_entries first)
+  - [x] `_destroy` exposed as `destroy` by async-graphql (frontend + introspection)
+  - [x] `fetch_account_balance` SUM decode error (cast to `::INTEGER`)
 
 ---
 

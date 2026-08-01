@@ -425,6 +425,12 @@ impl BankEntryMutation {
 
         let account_entries = fetch_account_entries_for_bank_entry(pool, id).await?;
 
+        sqlx::query("DELETE FROM account_entries WHERE bank_entry_id = $1")
+            .bind(id)
+            .execute(pool)
+            .await
+            .map_err(|e| format!("delete account entries: {e}"))?;
+
         let row = sqlx::query_as::<_, BankEntryRow>(
             "DELETE FROM bank_entries WHERE id = $1 RETURNING *",
         )
