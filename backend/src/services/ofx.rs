@@ -54,16 +54,14 @@ pub fn parse_ofx(content: &str) -> Result<OFXStatement, String> {
         .and_then(|s| parse_amount_cents(&s))
         .unwrap_or(0);
 
-    let stmt_re =
-        regex::Regex::new(r"(?s)<STMTTRN>(.*?)<STMTTRN>|<STMTTRN>(.*?)</STMTTRN>")
-            .map_err(|e| format!("regex: {e}"))?;
+    let stmt_re = regex::Regex::new(r"(?s)<STMTTRN>(.*?)</STMTTRN>")
+        .map_err(|e| format!("regex: {e}"))?;
 
     let mut transactions = Vec::new();
 
     for cap in stmt_re.captures_iter(content) {
-        let block = cap.get(1).or_else(|| cap.get(2)).map(|m| m.as_str());
-
-        if let Some(block) = block {
+        if let Some(block) = cap.get(1) {
+            let block = block.as_str();
             let date_str = extract_tag(block, "DTPOSTED").unwrap_or_default();
             let date = parse_ofx_date(&date_str).unwrap_or_default();
 
