@@ -60,9 +60,10 @@ mutation or form.
 
 ### Computed fields
 
-- **`balanceCents`** — running total of all account entries for this account,
-  computed via SQL window function over `account_entries` joined to
-  `bank_entries` (ordered by date).
+- **`balanceCents`** — total of all account entries for this account, computed
+  server-side per account as `COALESCE(SUM(amount_cents), 0)::INTEGER` over
+  `account_entries` (the `::INTEGER` cast is required because PG `SUM()` returns
+  BIGINT). A running balance over time is not yet exposed.
 
 - **`active`** — `true` if the account has any account entries in the last 90
   days OR has a non-zero balance. Used to hide stale accounts from the main
@@ -142,12 +143,18 @@ A predicted future transaction — either one-time or recurring (via RRULE).
 |---|---|---|
 | `id` | `SERIAL` | Primary key |
 | `account_id` | `INTEGER` | FK → `accounts(id)`, required |
+| `date` | `DATE` | Required. Occurrence date for one-time entries; DTSTART for recurring (RRULE) entries |
 | `description` | `VARCHAR(255)` | Optional |
 | `amount_cents` | `INTEGER` | Required |
 | `rrule` | `VARCHAR(255)` | RRULE string; `null` means one-time |
 | `active` | `BOOLEAN` | Default `true`, used to disable without deleting |
 | `created_at` | `TIMESTAMPTZ` | |
 | `updated_at` | `TIMESTAMPTZ` | |
+
+**Why a `date` column?** Forecast expansion needs a concrete start date per entry.
+For one-time entries (`rrule = null`) it is the single occurrence date; for
+recurring entries it is the DTSTART that the RRULE expands from. Added in
+migration 003.
 
 **Why did projected entries replace strategies?** In the original Rails app,
 strategies were allocation rules (fixed amount, percent of income, amount per
@@ -168,9 +175,9 @@ complex patterns like "third Thursday of every month", and has a well-defined
 expansion algorithm. The `rrule` Rust crate can expand these into concrete
 dates for the forecast view.
 
-**What does `rrule = null` mean?** A one-time projection — it occurs once and
-never repeats. Useful for known future transactions like an upcoming bill or
-estimated tax payment.
+**What does `rrule = null` mean?** A one-time projection — it occurs once (on
+`date`) and never repeats. Useful for known future transactions like an upcoming
+bill or estimated tax payment.
 
 ### Computed / expanded fields
 
@@ -219,25 +226,18 @@ Account 1───* AccountEntry *───1 BankEntry
 
 ## Balance Calculation
 
-The running balance for an account is computed using a SQL window function:
+An account's current balance is the plain total of its account entries, fetched
+per account:
 
 ```sql
-SELECT
-  be.date,
-  ae.amount_cents,
-  SUM(ae.amount_cents) OVER (
-    ORDER BY be.date, ae.id
-    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-  ) AS running_balance_cents
-FROM account_entries ae
-JOIN bank_entries be ON be.id = ae.bank_entry_id
-WHERE ae.account_id = $1
-  AND be.deleted_at IS NULL
-ORDER BY be.date, ae.id;
+SELECT COALESCE(SUM(amount_cents), 0)::INTEGER
+FROM account_entries
+WHERE account_id = $1;
 ```
 
-This avoids the heavy subquery approach used in the Rails app and is easily
-materialized into a summary table if performance becomes an issue.
+The `::INTEGER` cast is required because PG `SUM()` over an `INTEGER` column
+returns BIGINT, which fails to decode as `i32`. A running (time-series) balance
+would use a window function over `bank_entries.date`, but is not implemented yet.
 
 ---
 

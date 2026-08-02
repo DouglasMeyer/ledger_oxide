@@ -4,13 +4,12 @@ Single-tenant personal finance app (no auth, no users). Rust backend (axum + asy
 
 ## Run the stack
 - `docker compose up -d` from repo root → postgres `:5432`, backend `:4000`, frontend `:5173`.
-- Backend container runs `cargo watch -x run` and auto-rebuilds on any change under `backend/`; frontend container runs `npm install && npm run dev` (Vite HMR). SQLx migrations auto-apply on backend startup.
-- Local backend without docker: `cargo run` in `backend/` — `backend/.env` points `DATABASE_URL` at `localhost:5432`. Run postgres alone with `docker compose up -d postgres`.
-- This machine has no system npm; node/npm come from nix: `nix-env -iA nixpkgs.nodejs`.
+- Backend container runs `cargo watch -x run` (auto-rebuild/restart on changes under `backend/`); frontend container runs `npm install && npm run dev` (Vite HMR). SQLx migrations auto-apply on backend startup. Day-to-day iteration is just editing files — the containers reload themselves.
+- All backend/frontend commands run **inside the containers** via `docker compose exec` (see Verify). Avoid host `cargo`/`npm` against the same source — the containers run as root and own the build artifacts.
 
-## Verify
-- Backend: `cargo build`; `cargo test` (only unit test is the OFX parser). No linter configured.
-- Frontend: `npx tsc -b` (strict typecheck; there is no `typecheck`/`lint` script) or `npm run build` (= `tsc -b && vite build`).
+## Verify (run inside the running containers)
+- Backend: `docker compose exec backend cargo build`; `docker compose exec backend cargo test` (only unit test is the OFX parser). No linter configured.
+- Frontend: `docker compose exec frontend npx tsc -b` (strict typecheck; there is no `typecheck`/`lint` script) or `docker compose exec frontend npm run build` (= `tsc -b && vite build`).
 
 ## Backend gotchas (all hit in practice)
 - async-graphql v7 `chrono` feature exposes `NaiveDate` as the GraphQL scalar **`NaiveDate`, not `Date`**. Queries must use `NaiveDate` (e.g. `bankEntries($dateFrom: NaiveDate)`; `forecast(from: NaiveDate, to: NaiveDate)`). `DateTime<Utc>` → `DateTime`.
@@ -21,7 +20,7 @@ Single-tenant personal finance app (no auth, no users). Rust backend (axum + asy
 - Benign expected warnings: `DbPool`/`new` dead code in `src/db.rs`.
 
 ## Docker root-ownership gotchas
-- Backend container builds as root into the mounted `backend/target/`. If `cargo build` fails with `Permission denied … .d`, delete root-owned `backend/target/debug/*.d` and rebuild.
+- Containers run as root. The backend builds as root into the mounted `backend/target/`; if a host `cargo build` then fails with `Permission denied … .d`, delete the root-owned `backend/target/debug/*.d` and rebuild (or use `docker compose exec` instead).
 - Host `npm install` in `frontend/` can fail EACCES if `node_modules` is root-owned from an earlier container run; `rm -rf node_modules` and retry.
 - `docker-compose.yml` still has the obsolete `version:` key (harmless warning).
 
@@ -30,4 +29,4 @@ Single-tenant personal finance app (no auth, no users). Rust backend (axum + asy
 - GraphQL wire names are camelCase (Rust snake_case auto-converted).
 - OFX/QFX import sends raw file text as `importBankStatement(input: { fileContent: String })` — no multipart `Upload`.
 - Schema changes go in new numbered `backend/migrations/NNN_*.sql`; they apply automatically at backend startup.
-- Keep `docs/TODO.md` in sync as phases land.
+- Keep `docs/TODO.md` (phase status) and `docs/MODEL.md` (data model) in sync as changes land.
