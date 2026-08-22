@@ -1,5 +1,11 @@
+
+
 FROM node:22
-
 WORKDIR /app
-
-CMD npm install && npm run dev
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npx playwright install-deps
+RUN npx playwright install
+EXPOSE 5173
+CMD ["npm", "run", "dev"]
