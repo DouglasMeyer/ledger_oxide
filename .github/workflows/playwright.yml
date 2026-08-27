@@ -20,8 +20,20 @@ jobs:
       run: npm ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
+
+    # When not on main, fetch screenshots and run tests
+    - name: Fetch screenshots (not main)
+      if: github.ref != 'refs/heads/main'
+      run: ./fetch_asset.sh
     - name: Run Playwright tests
+      if: github.ref != 'refs/heads/main'
       run: npx playwright test
+
+    # When on main, update snapshots as the standard
+    - name: Run Playwright tests (update snapshots)
+      if: github.ref == 'refs/heads/main'
+      run: npx playwright test --update-snapshots
+
     - uses: actions/upload-artifact@v7
       if: ${{ !cancelled() }}
       with:
@@ -31,6 +43,6 @@ jobs:
     - uses: actions/upload-artifact@v7
       if: ${{ !cancelled() }}
       with:
-        name: test-results
-        path: frontend/test-results/
+        name: screenshots
+        path: frontend/tests/__screenshots__/
         retention-days: 30

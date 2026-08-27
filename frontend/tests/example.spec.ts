@@ -9,5 +9,5 @@ test('has title', async ({ page }) => {
 test('page looks correct', async ({ page }, testInfo) => {
   await page.goto('/');
 
-  await page.screenshot({ path: testInfo.outputPath('screenshot.png') });
+  await expect(page).toHaveScreenshot();
 });

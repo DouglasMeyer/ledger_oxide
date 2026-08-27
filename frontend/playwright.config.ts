@@ -76,4 +76,10 @@ export default defineConfig({
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
   },
+
+  expect: {
+    toHaveScreenshot: {
+      pathTemplate: '{testDir}/__screenshots__{/projectName}/{testFilePath}/{arg}{ext}',
+    },
+  },
 });
