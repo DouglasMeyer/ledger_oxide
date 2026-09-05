@@ -6,7 +6,7 @@ test('has title', async ({ page }) => {
   await expect(page).toHaveTitle(/Ledger Oxide/);
 });
 
-test('page looks correct', async ({ page }, testInfo) => {
+test('page looks correct', async ({ page }) => {
   await page.goto('/');
 
   await expect(page).toHaveScreenshot();
