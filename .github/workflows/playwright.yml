@@ -24,7 +24,9 @@ jobs:
     # When not on main, fetch screenshots and run tests
     - name: Fetch screenshots (not main)
       if: github.ref != 'refs/heads/main'
-      run: ./fetch_asset.sh
+      run: ./fetch_asset.sh "$GITHUB_BASE_REF"
+      env:
+        GH_TOKEN: ${{ github.token }}
     - name: Run Playwright tests
       if: github.ref != 'refs/heads/main'
       run: npx playwright test
