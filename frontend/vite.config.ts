@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    allowedHosts: ['hostmachine'],
     proxy: {
       "/graphql": {
         target: process.env.VITE_API_URL || "http://localhost:4000",

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "./fetch_asset.sh && npx playwright test"
+    "test": "npx playwright test"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
