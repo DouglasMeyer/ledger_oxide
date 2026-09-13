@@ -105,7 +105,7 @@ main() {
   log_info "Fetching assets"
   ./fetch_asset.sh
   log_info "Running tests"
-  HOSTNAME="${HOST_HOSTNAME}" PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/ npx playwright test
+  HOSTNAME="${HOST_HOSTNAME}" PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/ npx playwright test --reporter=line
 }
 
 parse_params "$@"
