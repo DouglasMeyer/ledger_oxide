@@ -16,35 +16,30 @@ jobs:
     - uses: cachix/cachix-action@v16
       with:
         name: devenv
+    - uses: docker/setup-docker-action@v5
     - name: Install devenv.sh
       run: nix profile add nixpkgs#devenv
 
-    - name: Start backend / frontend
-      run: devenv up -d
+    - name: Install frontend packages
+      shell: devenv --profile testing shell bash -- -e {0}
+      run: |
+        cd frontend
+        npm install
 
-    - name: Populate db with seeds
-      run: devenv shell seed
+    - name: Start backend / frontend
+      run: devenv --profile testing up -d
 
     # When not on main, fetch screenshots and run tests
-    - name: Fetch screenshots (not main)
-      if: github.ref != 'refs/heads/main'
-      run: |
-        cd frontend
-        ./fetch_asset.sh "$GITHUB_BASE_REF"
-      env:
-        GH_TOKEN: ${{ github.token }}
     - name: Run Playwright tests
       if: github.ref != 'refs/heads/main'
-      run: |
-        cd frontend
-        npx playwright test
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: devenv --profile testing shell ./frontend/playwright_tests.sh --reporter line
 
     # When on main, update snapshots as the standard
     - name: Run Playwright tests (update snapshots)
       if: github.ref == 'refs/heads/main'
-      run: |
-        cd frontend
-        npx playwright test --update-snapshots
+      run: devenv --profile testing shell ./frontend/playwright_tests.sh --reporter line --update-shapshots
 
     - uses: actions/upload-artifact@v7
       if: ${{ !cancelled() }}

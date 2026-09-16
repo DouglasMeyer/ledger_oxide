@@ -12,11 +12,13 @@ set -Eeuo pipefail
 # Track the script's native directory regardless of where it is run from
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
+cd "${SCRIPT_DIR}" || exit 1
 
 # ------------------------------------------------------------------------------
 # Default Variables & Configurations
 # ------------------------------------------------------------------------------
 VERBOSE=false
+PLAYWRIGHT_CMD="npx playwright test"
 
 # ------------------------------------------------------------------------------
 # Helper Functions
@@ -76,7 +78,19 @@ parse_params() {
         VERBOSE=true
         shift
         ;;
-      *)
+      --update-snapshots)
+        PLAYWRIGHT_CMD="${PLAYWRIGHT_CMD} --update-snapshots"
+        shift
+        ;;
+      --reporter)
+        PLAYWRIGHT_CMD="${PLAYWRIGHT_CMD} --reporter $2"
+        shift 2
+        ;;
+      --) # End of all options
+        shift
+        break
+        ;;
+      -?*)
         log_error "Unknown option: $1"
         exit 1
         ;;
@@ -87,6 +101,7 @@ parse_params() {
 }
 
 main() {
+  log_info "Running in verbose mode."
 
   PLAYWRIGHT_VERSION="1.61.0"
   HOST_HOSTNAME="hostmachine"
@@ -105,7 +120,7 @@ main() {
   log_info "Fetching assets"
   ./fetch_asset.sh
   log_info "Running tests"
-  HOSTNAME="${HOST_HOSTNAME}" PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/ npx playwright test --reporter=line
+  HOSTNAME="${HOST_HOSTNAME}" PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/ $PLAYWRIGHT_CMD
 }
 
 parse_params "$@"
