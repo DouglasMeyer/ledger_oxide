@@ -40,9 +40,3 @@ CREATE TABLE projected_entries (
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
-CREATE TABLE bank_imports (
-    id            SERIAL PRIMARY KEY,
-    balance_cents INTEGER NOT NULL,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);

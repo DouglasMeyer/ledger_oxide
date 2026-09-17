@@ -1,38 +1,45 @@
 name: Playwright Tests
 on:
-  push:
-    branches: [ main, master ]
   pull_request:
-    branches: [ main, master ]
+  push:
+
 jobs:
-  test:
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
     steps:
-    - uses: actions/checkout@v7
-    - uses: actions/setup-node@v7
+    - uses: actions/checkout@v5
+    - uses: cachix/install-nix-action@v31
+    - uses: cachix/cachix-action@v16
       with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+        name: devenv
+    - uses: docker/setup-docker-action@v5
+    - name: Install devenv.sh
+      run: nix profile add nixpkgs#devenv
+
+    - name: Install frontend packages
+      shell: devenv --profile testing shell bash -- -e {0}
+      run: |
+        cd frontend
+        npm install
+
+    - name: Start backend / frontend
+      run: devenv --profile testing up -d
 
     # When not on main, fetch screenshots and run tests
-    - name: Fetch screenshots (not main)
-      if: github.ref != 'refs/heads/main'
-      run: ./fetch_asset.sh
     - name: Run Playwright tests
       if: github.ref != 'refs/heads/main'
-      run: npx playwright test
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: devenv --profile testing shell ./frontend/playwright_tests.sh --reporter line
 
     # When on main, update snapshots as the standard
     - name: Run Playwright tests (update snapshots)
       if: github.ref == 'refs/heads/main'
-      run: npx playwright test --update-snapshots
+      run: devenv --profile testing shell ./frontend/playwright_tests.sh --reporter line --update-shapshots
 
     - uses: actions/upload-artifact@v7
       if: ${{ !cancelled() }}

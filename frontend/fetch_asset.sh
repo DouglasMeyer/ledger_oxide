@@ -12,7 +12,7 @@ SCRIPT_NAME=$(basename "${BASH_SOURCE[0]}")
 ARTIFACT_NAME=screenshots
 ARTIFACT_PATH=tests/__screenshots__
 
-FULL_BRANCH_NAME=$( git rev-parse --abbrev-ref --symbolic-full-name @{upstream} )
+FULL_BRANCH_NAME=$( git rev-parse --abbrev-ref --symbolic-full-name @{upstream} || echo "main" )
 BRANCH_NAME=${FULL_BRANCH_NAME#origin/}
 
 # --- Help / Usage Documentation ---
@@ -24,7 +24,7 @@ Fetch github workflow screenshots to serve as test standards.
 
 Options:
   -h, --help      Display this help message and exit.
-  branch_name     Branch to fetch screenshots from, defaults to upstream branch
+  branch_name     Branch to fetch screenshots from, defaults to upstream branch or "main"
 
 Example:
   ./${SCRIPT_NAME} [branch_name]
@@ -33,11 +33,6 @@ EOF
 }
 
 parse_params() {
-    # Check if no arguments were provided
-    if [[ $# -eq 0 ]]; then
-        usage
-    fi
-
     # Loop through arguments using a while-case matrix
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -55,14 +50,9 @@ parse_params() {
                 ;;
         esac
     done
-
-    # Validate required parameters
-    if [[ -z "${INPUT_FILE}" ]]; then
-        log_error "Missing required option: --file (-f)"
-        exit 1
-    fi
 }
 
+parse_params "$@"
 
 RUN_ID=$( gh api repos/DouglasMeyer/ledger_oxide/actions/runs?branch=${BRANCH_NAME} --jq '.workflow_runs[0].id' )
 
